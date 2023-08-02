@@ -1,0 +1,190 @@
+# ===================================================================
+# Spring Boot configuration.
+#
+# This configuration will be overridden by the Spring profile you use,
+# for example application-dev.yml if you use the "dev" profile.
+#
+# More information on profiles: https://www.jhipster.tech/profiles/
+# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+# ===================================================================
+# Standard Spring Boot properties.
+# Full reference is available at:
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+# ===================================================================
+feign:
+    hystrix:
+        enabled: true
+
+hystrix:
+    command:
+        default:
+            execution:
+                isolation:
+                    strategy: SEMAPHORE
+    shareSecurityContext: true
+
+management:
+    endpoints:
+        web:
+            base-path: /management
+            exposure:
+                include: [ 'configprops', 'env', 'health', 'info', 'jhimetrics', 'logfile', 'loggers', 'threaddump' ]
+    endpoint:
+        health:
+            probes:
+                enabled: true
+            enabled: true
+        jhimetrics:
+            enabled: true
+    info:
+        git:
+            mode: full
+    health:
+        group:
+            liveness:
+                include: livenessState
+            readiness:
+                include: readinessState
+        mail:
+            enabled: false # When using the MailService, configure an SMTP server and set this to true
+        redis:
+            enabled: false
+    metrics:
+        enable:
+            http: true
+            jvm: true
+            logback: true
+            process: true
+            system: true
+        distribution:
+            percentiles-histogram:
+                all: true
+            percentiles:
+                all: 0, 0.5, 0.75, 0.95, 0.99, 1.0
+        tags:
+            application: walk
+        web:
+            server:
+                request:
+                    autotime:
+                        enabled: true
+
+logging:
+    level:
+        dev.toannv.interview.walk.config.RequestLoggingTimeFilter: DEBUG
+        org.springframework.data.convert.CustomConversions: ERROR
+
+spring:
+    application:
+        name: Walk Service
+    profiles:
+        active: dev
+    jmx:
+        enabled: false
+    messages:
+        basename: i18n/messages
+    main:
+        allow-bean-definition-overriding: true
+    task:
+        execution:
+            thread-name-prefix: walk-task-
+            pool:
+                core-size: 2
+                max-size: 50
+                queue-capacity: 10000
+        scheduling:
+            thread-name-prefix: walk-scheduling-
+            pool:
+                size: 2
+    flyway:
+        schemas: public
+    datasource:
+        url: jdbc:postgresql://localhost:5432/walk-service?currentSchema=public
+        username: postgres
+        password: postgres
+        driver-class-name: org.postgresql.Driver
+    jpa:
+        properties:
+            hibernate:
+                default_schema: public
+                dialect: dev.toannv.interview.walk.config.PostgreSQL10JsonDialect
+                show_sql: true
+                format_sql: true
+                jdbc:
+                    time_zone: UTC
+                    lob:
+                        non_contextual_creation: true # to solve https://github.com/spring-projects/spring-boot/issues/12007
+        open-in-view: false
+server:
+    servlet:
+        session:
+            cookie:
+                http-only: true
+    port: 8181
+
+# Properties to be exposed on the /info management endpoint
+info:
+    display-ribbon-on-profiles: 'dev'
+
+# ===================================================================
+# JHipster specific properties
+#
+# Full reference is available at: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+jhipster:
+    clientApp:
+        name: 'WalkApp'
+    cors:
+        allowed-origins: "*"
+        allowed-methods: "GET, POST, DELETE, PUT, PATCH, HEAD"
+        allowed-headers: "*"
+        exposed-headers: "Authorization, Access-Control-Allow-Origin, Access-Control-Allow-Credentials"
+        allow-credentials: false
+        max-age: 1800
+    api-docs:
+        default-include-pattern: ${server.servlet.context-path:}/api/.*
+        management-include-pattern: ${server.servlet.context-path:}/management/.*
+        title: Walk API
+        description: Walk API documentation
+        version: ${application.app-version}
+        terms-of-service-url:
+        contact-name:
+        contact-url:
+        contact-email:
+        license: Apache 2.0
+        license-url: https://www.apache.org/licenses/LICENSE-2.0.html
+    security:
+        content-security-policy: "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
+# ===================================================================
+# Application specific properties
+# Add your own application properties here, see the ApplicationProperties class
+# to have type-safe configuration, like in the JHipsterProperties above
+#
+# More documentation is available at:
+# https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+application:
+    app-version: #project.version#
+
+walk-service:
+    redis:
+        url: redis://localhost:6379
+        password:
+        client-name: walk-service
+        prefix: dev-
+        ssl: false
+        connection-pool-size: 10
+        connection-minimum-idle-size: 5
+        subscription-connection-pool-size: 7
+        database: 0 # Redis database index (default is 0)
+        time-to-live: 604_800_000 # 7 days in milliseconds
+        max-idle-time: 86_400_000 # 24 hours in milliseconds
+    executor:
+        step-archive:
+            core-pool-size: 50
+            max-pool-size: 100
+            queue-capacity: 1000

@@ -1,0 +1,305 @@
+openapi: '3.0.3'
+info:
+    title: Walk Service APIs
+    version: 0.0.1
+servers:
+    -   url: http://localhost:8181
+        description: Development server
+    -   url: https://localhost:8181
+        description: Development server with TLS Profile
+
+paths:
+    /actuator/health:
+        get:
+            tags:
+                - HealthCheck
+            summary: Health Check
+            operationId: healthCheck
+            responses:
+                200:
+                    description: Health Check
+
+    /api/v1/users:
+        get:
+            tags:
+                - UserV1
+            summary: Get all users
+            operationId: getAllUsers
+            parameters:
+                -   name: GetUsersCriteria
+                    in: query
+                    required: false
+                    schema:
+                        $ref: '#/components/schemas/GetUsersCriteria'
+            responses:
+                200:
+                    description: Successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetAllUsersResponse'
+                400:
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+
+    /api/v1/steps:
+        post:
+            tags:
+                - StepV1
+            summary: Record step of user by day
+            operationId: recordStep
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RecordStepRequest'
+            responses:
+                200:
+                    description: Successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RecordStepResponse'
+                400:
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+                401:
+                    description: Unauthorized
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+
+    /api/v1/steps/weekly/{userId}:
+        get:
+            tags:
+                - StepV1
+            summary: Get weekly steps of user
+            operationId: getWeeklySteps
+            parameters:
+                -   name: userId
+                    in: path
+                    required: true
+                    schema:
+                        type: string
+            responses:
+                200:
+                    description: Successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetWeeklyStepsResponse'
+                400:
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+
+    /api/v1/steps/monthly/{userId}:
+        get:
+            tags:
+                - StepV1
+            summary: Get monthly steps of user
+            operationId: getMonthlySteps
+            parameters:
+                -   name: userId
+                    in: path
+                    required: true
+                    schema:
+                        type: string
+            responses:
+                200:
+                    description: Successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetMonthlyStepsResponse'
+                400:
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+
+    /api/v1/ranking:
+        get:
+            tags:
+                - RankingV1
+            summary: Get ranking by date
+            operationId: getRankingByDate
+            parameters:
+                -   name: GetRankingCriteria
+                    in: query
+                    required: false
+                    schema:
+                        $ref: '#/components/schemas/GetRankingCriteria'
+            responses:
+                200:
+                    description: Create successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetRankingByDateResponse'
+                400:
+                    description: Bad request
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+    schemas:
+        ErrorResponse:
+            type: object
+            properties:
+                code:
+                    type: string
+                message:
+                    type: string
+
+        Page:
+            type: integer
+            format: int32
+            default: 1
+            minimum: 1
+
+        Size:
+            type: integer
+            format: int32
+            default: 15
+            minimum: 1
+
+        GetUsersCriteria:
+            type: object
+            title: GetUsersCriteria
+            properties:
+                page:
+                    $ref: '#/components/schemas/Page'
+                size:
+                    $ref: '#/components/schemas/Size'
+
+        GetAllUsersResponse:
+            type: object
+            title: GetAllUsersResponse
+            properties:
+                total:
+                    type: integer
+                    format: int64
+                page:
+                    $ref: '#/components/schemas/Page'
+                size:
+                    $ref: '#/components/schemas/Size'
+                users:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UserResponseItem'
+
+        UserResponseItem:
+            type: object
+            title: UserResponseItem
+            properties:
+                userId:
+                    type: integer
+                    format: int64
+                name:
+                    type: string
+                email:
+                    type: string
+
+        GetRankingCriteria:
+            type: object
+            title: GetRankingCriteria
+            properties:
+                date:
+                    type: string
+                    format: date
+                    description: the date to get ranking
+                page:
+                    $ref: '#/components/schemas/Page'
+                size:
+                    $ref: '#/components/schemas/Size'
+
+        RecordStepRequest:
+            type: object
+            required:
+                - userId
+                - steps
+            properties:
+                userId:
+                    type: integer
+                    format: int64
+                steps:
+                    type: integer
+                    format: int32
+                    minimum: 1
+                    maximum: 100000
+
+        RecordStepResponse:
+            type: object
+            properties:
+                stepId:
+                    type: integer
+                    format: int64
+                userId:
+                    type: integer
+                    format: int64
+                steps:
+                    type: integer
+                    format: int32
+                date:
+                    type: string
+                    format: date
+
+        GetWeeklyStepsResponse:
+            type: object
+            properties:
+                userId:
+                    type: integer
+                    format: int64
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/WeeklySteps'
+
+        WeeklySteps:
+            type: object
+            properties:
+                date:
+                    type: string
+                    format: date
+                steps:
+                    type: integer
+                    format: int32
+
+        GetMonthlyStepsResponse:
+            $ref: '#/components/schemas/GetWeeklyStepsResponse'
+
+        GetRankingByDateResponse:
+            type: object
+            properties:
+                date:
+                    type: string
+                    format: date
+                ranking:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/RankingItem'
+
+        RankingItem:
+            type: object
+            properties:
+                userId:
+                    type: string
+                steps:
+                    type: integer
+                    format: int32
+                rank:
+                    type: integer
+                    format: int32
