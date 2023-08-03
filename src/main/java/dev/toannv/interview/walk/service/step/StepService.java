@@ -1,5 +1,6 @@
 package dev.toannv.interview.walk.service.step;
 
+import com.querydsl.jpa.impl.JPADeleteClause;
 import com.querydsl.jpa.impl.JPAQuery;
 import dev.toannv.interview.walk.domain.QStep;
 import dev.toannv.interview.walk.domain.Step;
@@ -24,7 +25,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
+import javax.persistence.PersistenceContext;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -39,6 +42,8 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class StepService implements IStepService {
 
+    @PersistenceContext
+    private final EntityManager entityManager;
     private final IStepRepository stepRepository;
     private final ICacheService cacheService;
     private final IStepArchiveService stepArchiveService;
@@ -66,6 +71,25 @@ public class StepService implements IStepService {
         final var entity = stepRepository.save(step);
         stepArchiveService.recordStepArchive(step);
         return entity;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
+    public Long deleteStepByDate(final Date date, final int limit) {
+        final var affectedRows  = new JPADeleteClause(entityManager, QStep.step)
+                .where(QStep.step.id.in(new JPAQuery<Step>()
+                        .clone(entityManager)
+                        .select(QStep.step.id)
+                        .from(QStep.step)
+                        .where(QStep.step.date.before(date))
+                        .limit(limit)))
+                .execute();
+
+        if (log.isDebugEnabled()) {
+            log.debug("Deleted {} steps before {}", affectedRows, date);
+        }
+
+        return affectedRows;
     }
 
     @Override
@@ -98,11 +122,6 @@ public class StepService implements IStepService {
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void cleanPreviousMonthData() {
-    }
-
-    @Override
-    @Transactional(rollbackFor = Throwable.class)
     public void refreshDailyRanking() {
         log.info("<START> Refresh daily ranking");
         final RLock lock = redissonClient.getLock(StringUtils.join(Constants.RedisLock.DAILY_RANKING));
@@ -111,7 +130,7 @@ public class StepService implements IStepService {
             return;
         }
 
-        lock.lock(dailyRankingLockDuration, TimeUnit.MILLISECONDS);
+        lock.lock(dailyRankingLockDuration, TimeUnit.SECONDS);
         log.info("<LOCKED> Refresh daily ranking");
         try {
             stepRepository.refreshDailyRanking();
@@ -132,7 +151,7 @@ public class StepService implements IStepService {
             return;
         }
 
-        lock.lock(weeklyRankingLockDuration, TimeUnit.MILLISECONDS);
+        lock.lock(weeklyRankingLockDuration, TimeUnit.SECONDS);
         log.info("<LOCKED> Refresh weekly ranking");
         try {
             stepRepository.refreshWeeklyRanking();
@@ -153,7 +172,7 @@ public class StepService implements IStepService {
             return;
         }
 
-        lock.lock(monthlyRankingLockDuration, TimeUnit.MILLISECONDS);
+        lock.lock(monthlyRankingLockDuration, TimeUnit.SECONDS);
         log.info("<LOCKED> Refresh monthly ranking");
         try {
             stepRepository.refreshMonthlyRanking();

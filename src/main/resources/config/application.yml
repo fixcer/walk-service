@@ -187,11 +187,13 @@ walk-service:
         max-idle-time: 86_400_000 # 24 hours in milliseconds
         lock:
             daily-ranking:
-                duration: 5_000 # 5 seconds in milliseconds
+                duration: 5 # 5 seconds
             weekly-ranking:
-                duration: 5_000 # 5 seconds in milliseconds
+                duration: 5 # 5 seconds
             monthly-ranking:
-                duration: 5_000 # 5 seconds in milliseconds
+                duration: 5 # 5 seconds
+            previous-month-data-cleanup:
+                duration: 10 # 10 seconds
     executor:
         step-archive:
             core-pool-size: 50
@@ -200,7 +202,8 @@ walk-service:
     scheduler:
         previous-month-data-cleanup:
             enabled: true
-            cron: 0 5 0 1 * ? # 1st day of month at 00:05
+            delay: 2_000 # 2 seconds in milliseconds
+            limit: 100_000 # 100_000 records
         ranking:
             enabled: true
             daily: 1_800_000 # 30 minutes in milliseconds

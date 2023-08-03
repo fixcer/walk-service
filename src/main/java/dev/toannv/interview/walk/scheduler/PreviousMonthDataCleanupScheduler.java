@@ -1,6 +1,6 @@
 package dev.toannv.interview.walk.scheduler;
 
-import dev.toannv.interview.walk.service.step.IStepService;
+import dev.toannv.interview.walk.service.schedule.IScheduleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,11 +11,11 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(name = "walk-service.scheduler.previous-month-data-cleanup.enabled", havingValue = "true")
 public class PreviousMonthDataCleanupScheduler {
 
-    private final IStepService stepService;
+    private final IScheduleService scheduleService;
 
-    @Scheduled(cron = "${walk-service.scheduler.previous-month-data-cleanup.cron}", zone = "Asia/Ho_Chi_Minh")
+    @Scheduled(fixedDelayString = "${walk-service.scheduler.previous-month-data-cleanup.delay}", initialDelay = 2000)
     public void cleanup() {
-        stepService.cleanPreviousMonthData();
+        scheduleService.cleanPreviousMonthData();
     }
 
 }

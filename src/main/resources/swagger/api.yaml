@@ -5,11 +5,9 @@ info:
 servers:
     -   url: http://localhost:8181
         description: Development server
-    -   url: https://localhost:8181
-        description: Development server with TLS Profile
 
 paths:
-    /actuator/health:
+    /management/health:
         get:
             tags:
                 - HealthCheck

@@ -10,6 +10,7 @@ public final class Constants {
 
     public static final String TRACKING_HEADER = "X-Correlation-Id";
     public static final String SYSTEM_ACCOUNT = "system";
+    public static final String CLEAN_PREVIOUS_MONTH_DATA = "CLEAN_PREVIOUS_MONTH_DATA";
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class SortField {
@@ -43,6 +44,7 @@ public final class Constants {
         public static final String DAILY_RANKING = "daily-ranking";
         public static final String WEEKLY_RANKING = "weekly-ranking";
         public static final String MONTHLY_RANKING = "monthly-ranking";
+        public static final String CLEAN_PREVIOUS_MONTH_DATA = "clean-previous-month-data";
     }
 
 }

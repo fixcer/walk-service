@@ -4,6 +4,8 @@ import dev.toannv.interview.walk.domain.Step;
 import dev.toannv.interview.walk.web.api.model.GetWeeklyStepsResponse;
 import dev.toannv.interview.walk.web.api.model.RecordStepRequest;
 
+import java.util.Date;
+
 public interface IStepService {
 
     /**
@@ -13,6 +15,15 @@ public interface IStepService {
      * @return {@link Step} the step
      */
     Step recordStep(RecordStepRequest request);
+
+    /**
+     * Delete step by date
+     *
+     * @param date  {@link Date} the date
+     * @param limit {@link Integer} the limit
+     * @return {@link Long} the number of deleted rows
+     */
+    Long deleteStepByDate(Date date, int limit);
 
     /**
      * Get weekly steps of user
@@ -29,11 +40,6 @@ public interface IStepService {
      * @return {@link GetWeeklyStepsResponse} the response
      */
     GetWeeklyStepsResponse getMonthlySteps(Long userId);
-
-    /**
-     * Clean previous month data
-     */
-    void cleanPreviousMonthData();
 
     /**
      * Refresh daily ranking
