@@ -7,7 +7,6 @@ import dev.toannv.interview.walk.web.api.model.GetWeeklyStepsResponse;
 import dev.toannv.interview.walk.web.api.model.RecordStepRequest;
 import dev.toannv.interview.walk.web.api.model.RecordStepResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,13 +17,13 @@ public class StepV1Controller implements StepV1ApiDelegate {
     private final IStepService stepService;
 
     @Override
-    public ResponseEntity<GetWeeklyStepsResponse> getMonthlySteps(String userId) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<GetWeeklyStepsResponse> getMonthlySteps(final Long userId) {
+        return ResponseEntity.ok(stepService.getMonthlySteps(userId));
     }
 
     @Override
-    public ResponseEntity<GetWeeklyStepsResponse> getWeeklySteps(String userId) {
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<GetWeeklyStepsResponse> getWeeklySteps(final Long userId) {
+        return ResponseEntity.ok(stepService.getWeeklySteps(userId));
     }
 
     @Override

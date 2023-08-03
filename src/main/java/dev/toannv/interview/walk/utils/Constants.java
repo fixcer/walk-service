@@ -24,6 +24,8 @@ public final class Constants {
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class CacheName {
+        public static final String WEEKLY_STEP = "weekly-step";
+        public static final String MONTHLY_STEP = "monthly-step";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -34,6 +36,13 @@ public final class Constants {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class AsyncTask {
         public static final String STEP_ARCHIVE_TASK_EXECUTOR = "stepArchiveTaskExecutor";
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class RedisLock {
+        public static final String DAILY_RANKING = "daily-ranking";
+        public static final String WEEKLY_RANKING = "weekly-ranking";
+        public static final String MONTHLY_RANKING = "monthly-ranking";
     }
 
 }

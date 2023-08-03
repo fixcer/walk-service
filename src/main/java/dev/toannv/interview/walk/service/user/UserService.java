@@ -12,16 +12,12 @@ import dev.toannv.interview.walk.web.api.model.GetUsersCriteria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -29,24 +25,6 @@ import java.util.stream.Collectors;
 public class UserService implements IUserService {
 
     private final IUserRepository userRepository;
-
-    @Override
-    public boolean existedById(Long userId) {
-        if (Objects.isNull(userId)) {
-            return false;
-        }
-
-        return userRepository.existsByIdAndDeletedIsFalse(userId);
-    }
-
-    @Override
-    public User findById(final Long id) {
-        if (Objects.isNull(id)) {
-            return null;
-        }
-
-        return userRepository.findById(id).orElse(null);
-    }
 
     @Override
     public GetAllUsersResponse getUsers(final GetUsersCriteria criteria) {
@@ -65,7 +43,7 @@ public class UserService implements IUserService {
         response.setSize(criteria.getSize());
         response.setUsers(CollectionUtils.emptyIfNull(userPage.getContent()).stream()
                 .map(IUserMapper.INSTANCE::toUserResponseItem)
-                .collect(Collectors.toList()));
+                .toList());
         return response;
     }
 

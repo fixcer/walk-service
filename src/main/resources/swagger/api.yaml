@@ -87,7 +87,8 @@ paths:
                     in: path
                     required: true
                     schema:
-                        type: string
+                        type: integer
+                        format: int64
             responses:
                 200:
                     description: Successfully
@@ -113,7 +114,8 @@ paths:
                     in: path
                     required: true
                     schema:
-                        type: string
+                        type: integer
+                        format: int64
             responses:
                 200:
                     description: Successfully
@@ -132,8 +134,8 @@ paths:
         get:
             tags:
                 - RankingV1
-            summary: Get ranking by date
-            operationId: getRankingByDate
+            summary: Get ranking by current date
+            operationId: getRankingByCurrentDate
             parameters:
                 -   name: GetRankingCriteria
                     in: query
@@ -217,12 +219,9 @@ components:
             type: object
             title: GetRankingCriteria
             properties:
-                date:
+                cursor:
                     type: string
-                    format: date
-                    description: the date to get ranking
-                page:
-                    $ref: '#/components/schemas/Page'
+                    description: The cursor to get next page
                 size:
                     $ref: '#/components/schemas/Size'
 
@@ -263,6 +262,9 @@ components:
                 userId:
                     type: integer
                     format: int64
+                totalSteps:
+                    type: integer
+                    format: int32
                 data:
                     type: array
                     items:
@@ -273,7 +275,7 @@ components:
             properties:
                 date:
                     type: string
-                    format: date
+                    pattern: ^\d{4}-\d{2}-\d{2}$
                 steps:
                     type: integer
                     format: int32
@@ -287,19 +289,31 @@ components:
                 date:
                     type: string
                     format: date
+                paging:
+                    $ref: '#/components/schemas/Paging'
                 ranking:
                     type: array
                     items:
                         $ref: '#/components/schemas/RankingItem'
 
+        Paging:
+            type: object
+            properties:
+                cursor:
+                    type: string
+                    description: The cursor to get next page
+                hasNext:
+                    type: boolean
+                    description: The flag to check if there is next page
+                size:
+                    $ref: '#/components/schemas/Size'
+
         RankingItem:
             type: object
             properties:
                 userId:
-                    type: string
-                steps:
                     type: integer
-                    format: int32
-                rank:
+                    format: int64
+                steps:
                     type: integer
                     format: int32

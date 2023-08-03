@@ -7,19 +7,32 @@ import dev.toannv.interview.walk.exception.ErrorCode;
 import dev.toannv.interview.walk.exception.ValidationException;
 import dev.toannv.interview.walk.mapper.IStepMapper;
 import dev.toannv.interview.walk.repository.IStepRepository;
+import dev.toannv.interview.walk.service.cache.ICacheService;
 import dev.toannv.interview.walk.service.steparchive.IStepArchiveService;
-import dev.toannv.interview.walk.service.user.IUserService;
+import dev.toannv.interview.walk.utils.Constants;
+import dev.toannv.interview.walk.web.api.model.GetWeeklyStepsResponse;
 import dev.toannv.interview.walk.web.api.model.RecordStepRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.LockModeType;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.temporal.TemporalAdjusters;
+import java.util.Collections;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -27,26 +40,128 @@ import java.util.Date;
 public class StepService implements IStepService {
 
     private final IStepRepository stepRepository;
-    private final IUserService userService;
+    private final ICacheService cacheService;
     private final IStepArchiveService stepArchiveService;
+    private final RedissonClient redissonClient;
+
+    @Value("${walk-service.redis.lock.daily-ranking.duration}")
+    private int dailyRankingLockDuration;
+    @Value("${walk-service.redis.lock.weekly-ranking.duration}")
+    private int weeklyRankingLockDuration;
+    @Value("${walk-service.redis.lock.monthly-ranking.duration}")
+    private int monthlyRankingLockDuration;
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
     public Step recordStep(final RecordStepRequest request) {
-        final var existedUser = userService.existedById(request.getUserId());
-        if (!existedUser) {
-            throw new ValidationException(String.format("User with id %s not found", request.getUserId()), ErrorCode.USER_NOT_FOUND);
-        }
-
+        // For demo purpose, i don't need to check user existence
         var step = getStepForUpdate(request.getUserId(), LocalDate.now());
         if (ObjectUtils.isEmpty(step)) {
             step = IStepMapper.INSTANCE.toStep(request);
         }
 
         addStep(step, request.getSteps());
+        clearCache(request.getUserId());
+
         final var entity = stepRepository.save(step);
         stepArchiveService.recordStepArchive(step);
         return entity;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = Constants.CacheName.WEEKLY_STEP, keyGenerator="customKeyGenerator", condition = "#userId != null")
+    public GetWeeklyStepsResponse getWeeklySteps(final Long userId) {
+        if (log.isDebugEnabled()) {
+            log.debug("Get weekly steps for user {}", userId);
+        }
+        final var weekStartDate = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+
+        final Date start = Date.from(weekStartDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        final Date end = Date.from(weekStartDate.plusDays(7).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        return getStepsByCriteria(userId, start, end);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = Constants.CacheName.MONTHLY_STEP, keyGenerator="customKeyGenerator", condition = "#userId != null")
+    public GetWeeklyStepsResponse getMonthlySteps(final Long userId) {
+        if (log.isDebugEnabled()) {
+            log.debug("Get monthly steps for user {}", userId);
+        }
+        final var monthStartDate = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
+
+        final Date start = Date.from(monthStartDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        final Date end = Date.from(monthStartDate.plusMonths(1).atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+        return getStepsByCriteria(userId, start, end);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
+    public void cleanPreviousMonthData() {
+    }
+
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
+    public void refreshDailyRanking() {
+        log.info("<START> Refresh daily ranking");
+        final RLock lock = redissonClient.getLock(StringUtils.join(Constants.RedisLock.DAILY_RANKING));
+        if (lock.isLocked()) {
+            log.info("<SKIP> Refresh daily ranking, because it is running by another process");
+            return;
+        }
+
+        lock.lock(dailyRankingLockDuration, TimeUnit.MILLISECONDS);
+        log.info("<LOCKED> Refresh daily ranking");
+        try {
+            stepRepository.refreshDailyRanking();
+            log.info("<UPDATED> Refresh daily ranking");
+        } finally {
+            lock.unlock();
+            log.info("<UNLOCKED> Refresh daily ranking");
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
+    public void refreshWeeklyRanking() {
+        log.info("<START> Refresh weekly ranking");
+        final RLock lock = redissonClient.getLock(StringUtils.join(Constants.RedisLock.WEEKLY_RANKING));
+        if (lock.isLocked()) {
+            log.info("<SKIP> Refresh weekly ranking, because it is running by another process");
+            return;
+        }
+
+        lock.lock(weeklyRankingLockDuration, TimeUnit.MILLISECONDS);
+        log.info("<LOCKED> Refresh weekly ranking");
+        try {
+            stepRepository.refreshWeeklyRanking();
+            log.info("<UPDATED> Refresh weekly ranking");
+        } finally {
+            lock.unlock();
+            log.info("<UNLOCKED> Refresh weekly ranking");
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Throwable.class)
+    public void refreshMonthlyRanking() {
+        log.info("<START> Refresh monthly ranking");
+        final RLock lock = redissonClient.getLock(StringUtils.join(Constants.RedisLock.MONTHLY_RANKING));
+        if (lock.isLocked()) {
+            log.info("<SKIP> Refresh monthly ranking, because it is running by another process");
+            return;
+        }
+
+        lock.lock(monthlyRankingLockDuration, TimeUnit.MILLISECONDS);
+        log.info("<LOCKED> Refresh monthly ranking");
+        try {
+            stepRepository.refreshMonthlyRanking();
+            log.info("<UPDATED> Refresh monthly ranking");
+        } finally {
+            lock.unlock();
+            log.info("<UNLOCKED> Refresh monthly ranking");
+        }
     }
 
     private void addStep(Step step, int steps) {
@@ -57,6 +172,11 @@ public class StepService implements IStepService {
         }
     }
 
+    private void clearCache(final Long userId) {
+        cacheService.clearWeeklyStepCache(userId);
+        cacheService.clearMonthlyStepCache(userId);
+    }
+
     private Step getStepForUpdate(final Long userId, final LocalDate localDate) {
         final var date = Date.from(localDate.atStartOfDay().toInstant(ZoneOffset.UTC));
 
@@ -64,6 +184,26 @@ public class StepService implements IStepService {
                 .from(QStep.step)
                 .where(QStep.step.userId.eq(userId).and(QStep.step.date.eq(date)))
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE));
+    }
+
+    private GetWeeklyStepsResponse getStepsByCriteria(final Long userId, final Date startDate, final Date endDate) {
+        final var steps = stepRepository.findAll(new JPAQuery<Step>()
+                .from(QStep.step)
+                .where(QStep.step.userId.eq(userId)
+                        .and(QStep.step.date.goe(startDate))
+                        .and(QStep.step.date.lt(endDate))));
+
+        if (CollectionUtils.isEmpty(steps)) {
+            return new GetWeeklyStepsResponse()
+                    .userId(userId)
+                    .totalSteps(0)
+                    .data(Collections.emptyList());
+        }
+
+        return new GetWeeklyStepsResponse()
+                .userId(userId)
+                .totalSteps(steps.stream().mapToInt(Step::getSteps).sum())
+                .data(steps.stream().map(IStepMapper.INSTANCE::toWeeklySteps).toList());
     }
 
 }

@@ -94,10 +94,12 @@ spring:
                 core-size: 2
                 max-size: 50
                 queue-capacity: 10000
+        # Default thread pool size for scheduling tasks is 1.
+        # Consider increasing this value if you want to run multiple scheduling tasks in parallel.
         scheduling:
             thread-name-prefix: walk-scheduling-
             pool:
-                size: 2
+                size: 8
     flyway:
         schemas: public
     datasource:
@@ -183,8 +185,24 @@ walk-service:
         database: 0 # Redis database index (default is 0)
         time-to-live: 604_800_000 # 7 days in milliseconds
         max-idle-time: 86_400_000 # 24 hours in milliseconds
+        lock:
+            daily-ranking:
+                duration: 5_000 # 5 seconds in milliseconds
+            weekly-ranking:
+                duration: 5_000 # 5 seconds in milliseconds
+            monthly-ranking:
+                duration: 5_000 # 5 seconds in milliseconds
     executor:
         step-archive:
             core-pool-size: 50
             max-pool-size: 100
             queue-capacity: 1000
+    scheduler:
+        previous-month-data-cleanup:
+            enabled: true
+            cron: 0 5 0 1 * ? # 1st day of month at 00:05
+        ranking:
+            enabled: true
+            daily: 1_800_000 # 30 minutes in milliseconds
+            weekly: 1_800_000 # 30 minutes in milliseconds
+            monthly: 1_800_000 # 30 minutes in milliseconds

@@ -13,4 +13,4 @@ WORKDIR /app
 # Expose port
 EXPOSE 8181
 
-ENTRYPOINT ["java", "-Duser.timezone=Asia/Saigon", "-jar", "walk-service.jar"]
+ENTRYPOINT ["java", "-jar", "walk-service.jar"]
