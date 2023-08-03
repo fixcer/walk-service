@@ -111,9 +111,9 @@ spring:
         properties:
             hibernate:
                 default_schema: public
-                dialect: dev.toannv.interview.walk.config.PostgreSQL10JsonDialect
-                show_sql: true
-                format_sql: true
+                dialect: org.hibernate.dialect.PostgreSQL95Dialect
+                show_sql: false
+                format_sql: false
                 jdbc:
                     time_zone: UTC
                     lob:
@@ -125,6 +125,9 @@ server:
             cookie:
                 http-only: true
     port: 8181
+    tomcat:
+        threads:
+            max: 300
 
 # Properties to be exposed on the /info management endpoint
 info:
@@ -194,8 +197,10 @@ walk-service:
                 duration: 5 # 5 seconds
             previous-month-data-cleanup:
                 duration: 10 # 10 seconds
+        queue:
+            record-step-poll: 100
     executor:
-        step-archive:
+        record-step:
             core-pool-size: 50
             max-pool-size: 100
             queue-capacity: 1000

@@ -1,11 +1,10 @@
 package dev.toannv.interview.walk.web.rest;
 
-import dev.toannv.interview.walk.mapper.IStepMapper;
+import dev.toannv.interview.walk.service.queue.IQueueService;
 import dev.toannv.interview.walk.service.step.IStepService;
 import dev.toannv.interview.walk.web.api.StepV1ApiDelegate;
 import dev.toannv.interview.walk.web.api.model.GetWeeklyStepsResponse;
 import dev.toannv.interview.walk.web.api.model.RecordStepRequest;
-import dev.toannv.interview.walk.web.api.model.RecordStepResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class StepV1Controller implements StepV1ApiDelegate {
 
     private final IStepService stepService;
+    private final IQueueService queueService;
 
     @Override
     public ResponseEntity<GetWeeklyStepsResponse> getMonthlySteps(final Long userId) {
@@ -27,9 +27,9 @@ public class StepV1Controller implements StepV1ApiDelegate {
     }
 
     @Override
-    public ResponseEntity<RecordStepResponse> recordStep(final RecordStepRequest request) {
-        final var entity = stepService.recordStep(request);
-        return ResponseEntity.ok(IStepMapper.INSTANCE.toResponse(entity));
+    public ResponseEntity<Void> recordStep(final RecordStepRequest request) {
+        queueService.addToRecordStepQueue(request);
+        return ResponseEntity.ok().build();
     }
 
 }

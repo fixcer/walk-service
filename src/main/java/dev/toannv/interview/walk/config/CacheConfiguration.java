@@ -1,5 +1,6 @@
 package dev.toannv.interview.walk.config;
 
+import dev.toannv.interview.walk.utils.Constants;
 import org.redisson.api.RedissonClient;
 import org.redisson.spring.cache.CacheConfig;
 import org.redisson.spring.cache.RedissonSpringCacheManager;
@@ -33,6 +34,8 @@ public class CacheConfiguration {
     @Bean
     public CacheManager cacheManager(RedissonClient redissonClient) {
         Map<String, CacheConfig> config = new HashMap<>();
+        config.put(Constants.CacheName.WEEKLY_STEP, new CacheConfig(timeToLive, maxIdleTime));
+        config.put(Constants.CacheName.MONTHLY_STEP, new CacheConfig(timeToLive, maxIdleTime));
         return new RedissonSpringCacheManager(redissonClient, config);
     }
 

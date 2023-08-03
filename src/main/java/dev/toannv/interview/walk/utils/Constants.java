@@ -18,12 +18,6 @@ public final class Constants {
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static final class Role {
-        public static final String ADMIN = "ADMIN";
-        public static final String USER = "USER";
-    }
-
-    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class CacheName {
         public static final String WEEKLY_STEP = "weekly-step";
         public static final String MONTHLY_STEP = "monthly-step";
@@ -36,7 +30,7 @@ public final class Constants {
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class AsyncTask {
-        public static final String STEP_ARCHIVE_TASK_EXECUTOR = "stepArchiveTaskExecutor";
+        public static final String RECORD_STEP_TASK_EXECUTOR = "recordStepTaskExecutor";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -45,6 +39,11 @@ public final class Constants {
         public static final String WEEKLY_RANKING = "weekly-ranking";
         public static final String MONTHLY_RANKING = "monthly-ranking";
         public static final String CLEAN_PREVIOUS_MONTH_DATA = "clean-previous-month-data";
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class QUEUE {
+        public static final String RECORD_STEP_QUEUE = "record-step-queue";
     }
 
 }

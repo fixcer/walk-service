@@ -1,6 +1,5 @@
 package dev.toannv.interview.walk.config;
 
-import dev.toannv.interview.walk.security.AuthoritiesConstants;
 import dev.toannv.interview.walk.security.jwt.AuthenticationConfigurer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -69,12 +68,10 @@ public class SecurityConfiguration {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/admin/**").hasAnyAuthority(AuthoritiesConstants.SUPER_ADMIN)
                 .antMatchers("/management/health").permitAll()
                 .antMatchers("/management/health/**").permitAll()
                 .antMatchers("/management/info").permitAll()
-                .antMatchers("/management/prometheus").permitAll()
-                .antMatchers("/management/**").hasAnyAuthority(AuthoritiesConstants.SUPER_ADMIN);
+                .antMatchers("/management/prometheus").permitAll();
             // @formatter:on
         }
 

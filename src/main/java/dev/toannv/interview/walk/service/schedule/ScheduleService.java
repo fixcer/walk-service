@@ -37,7 +37,9 @@ public class ScheduleService implements IScheduleService {
     @Override
     @Transactional(rollbackFor = Throwable.class)
     public void cleanPreviousMonthData() {
-        log.info("<START> Clean previous month data");
+        if (log.isDebugEnabled()) {
+            log.debug("<START> Clean previous month data");
+        }
         var schedule = scheduleRepository.findByCode(Constants.CLEAN_PREVIOUS_MONTH_DATA);
         if (Objects.isNull(schedule)) {
             log.warn("<SKIP> Clean previous month data, because schedule not found");
@@ -46,7 +48,9 @@ public class ScheduleService implements IScheduleService {
 
         final var now = new Date();
         if (now.before(schedule.getNextRunAt())) {
-            log.info("<SKIP> Clean previous month data, because it is not time yet, next run at: {}", schedule.getNextRunAt());
+            if (log.isDebugEnabled()) {
+                log.debug("<SKIP> Clean previous month data, because it is not time yet, next run at: {}", schedule.getNextRunAt());
+            }
             return;
         }
 

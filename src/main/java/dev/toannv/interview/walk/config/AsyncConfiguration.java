@@ -13,22 +13,22 @@ import java.util.concurrent.Executor;
 @Configuration
 public class AsyncConfiguration {
 
-    @Value("${walk-service.executor.step-archive.core-pool-size}")
+    @Value("${walk-service.executor.record-step.core-pool-size}")
     private int corePoolSize;
 
-    @Value("${walk-service.executor.step-archive.max-pool-size}")
+    @Value("${walk-service.executor.record-step.max-pool-size}")
     private int maxPoolSize;
 
-    @Value("${walk-service.executor.step-archive.queue-capacity}")
+    @Value("${walk-service.executor.record-step.queue-capacity}")
     private int queueCapacity;
 
-    @Bean(name = Constants.AsyncTask.STEP_ARCHIVE_TASK_EXECUTOR)
+    @Bean(name = Constants.AsyncTask.RECORD_STEP_TASK_EXECUTOR)
     public Executor rtspTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(corePoolSize);
         executor.setMaxPoolSize(maxPoolSize);
         executor.setQueueCapacity(queueCapacity);
-        executor.setThreadNamePrefix("step-archive-task-");
+        executor.setThreadNamePrefix("record-step-task-");
         executor.initialize();
 
         return executor;

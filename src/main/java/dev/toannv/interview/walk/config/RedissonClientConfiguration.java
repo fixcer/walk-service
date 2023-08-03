@@ -37,7 +37,7 @@ public class RedissonClientConfiguration {
     @Value("${walk-service.redis.database:0}")
     private int database;
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     RedissonClient redissonClient() {
         Config config = new Config();
         SingleServerConfig serverConfig = config.useSingleServer();

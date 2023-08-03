@@ -57,10 +57,6 @@ paths:
             responses:
                 200:
                     description: Successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/RecordStepResponse'
                 400:
                     description: Bad request
                     content:
@@ -237,22 +233,6 @@ components:
                     format: int32
                     minimum: 1
                     maximum: 100000
-
-        RecordStepResponse:
-            type: object
-            properties:
-                stepId:
-                    type: integer
-                    format: int64
-                userId:
-                    type: integer
-                    format: int64
-                steps:
-                    type: integer
-                    format: int32
-                date:
-                    type: string
-                    format: date
 
         GetWeeklyStepsResponse:
             type: object

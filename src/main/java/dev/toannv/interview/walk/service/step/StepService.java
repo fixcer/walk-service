@@ -22,6 +22,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +59,8 @@ public class StepService implements IStepService {
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public Step recordStep(final RecordStepRequest request) {
+    @Async(Constants.AsyncTask.RECORD_STEP_TASK_EXECUTOR)
+    public void recordStep(final RecordStepRequest request) {
         // For demo purpose, i don't need to check user existence
         var step = getStepForUpdate(request.getUserId(), LocalDate.now());
         if (ObjectUtils.isEmpty(step)) {
@@ -69,8 +71,8 @@ public class StepService implements IStepService {
         clearCache(request.getUserId());
 
         final var entity = stepRepository.save(step);
+        log.info("Record step success: {}", entity);
         stepArchiveService.recordStepArchive(step);
-        return entity;
     }
 
     @Override

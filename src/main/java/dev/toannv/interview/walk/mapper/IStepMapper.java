@@ -3,7 +3,6 @@ package dev.toannv.interview.walk.mapper;
 import dev.toannv.interview.walk.domain.Step;
 import dev.toannv.interview.walk.utils.DateUtils;
 import dev.toannv.interview.walk.web.api.model.RecordStepRequest;
-import dev.toannv.interview.walk.web.api.model.RecordStepResponse;
 import dev.toannv.interview.walk.web.api.model.WeeklySteps;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,10 +16,6 @@ import java.util.Date;
 public interface IStepMapper {
 
     IStepMapper INSTANCE = Mappers.getMapper(IStepMapper.class);
-
-    @Mapping(target = "date", qualifiedByName = "toLocalDate")
-    @Mapping(source = "id", target = "stepId")
-    RecordStepResponse toResponse(Step step);
 
     @Mapping(target = "steps", ignore = true)
     Step toStep(RecordStepRequest recordStepRequest);
