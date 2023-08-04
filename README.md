@@ -7,6 +7,9 @@
 3.	Install postgresql, redis on your local machine or use docker
 4.  Edit configuration postgresql, redis in **src/main/resources/application.yml** file
 
+# Swagger
+Project using API-First approach, you can see swagger at `src/main/resources/swagger/api.yaml`
+
 # Build and Test
 These steps show how to build your code and run the tests.
 1.  Create an empty database **walk-service** and schema **public**, you can run the following command:

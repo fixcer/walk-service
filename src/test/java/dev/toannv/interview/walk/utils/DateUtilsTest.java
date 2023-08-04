@@ -27,8 +27,7 @@ class DateUtilsTest {
 
     @Test
     void whenToLocalDate_shouldReturnNull() {
-        Date date = null;
-        LocalDate result = DateUtils.toLocalDate(date);
+        LocalDate result = DateUtils.toLocalDate(null);
         Assertions.assertNull(result);
     }
 }
