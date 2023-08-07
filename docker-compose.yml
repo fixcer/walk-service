@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+    walk-service:
+        container_name: walk-service
+        restart: always
+        build: .
+        environment:
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://walk-postgres:5432/walk-service?currentSchema=public
+            - WALK_SERVICE_REDIS_URL=redis://walk-redis:6379
+        ports:
+            - "8181:8181"
+        networks:
+            - walk-network
+        depends_on:
+            - walk-postgres
+            - walk-redis
+
+    walk-postgres:
+        image: postgres:14.1
+        container_name: walk-postgres
+        restart: always
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-postgres}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+            PGDATA: /data/postgres
+        ports:
+            - "8432:5432"
+        networks:
+            - walk-network
+        volumes:
+            - postgres:/data/postgres
+            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    walk-redis:
+        image: redis:6.2.6
+        container_name: walk-redis
+        restart: always
+        ports:
+            - "8379:6379"
+        networks:
+            - walk-network
+
+volumes:
+    postgres:
+
+networks:
+    walk-network:
+        driver: bridge
+
