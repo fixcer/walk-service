@@ -149,6 +149,14 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ErrorResponse'
+        put:
+            tags:
+                - RankingV1
+            summary: Refresh ranking by current date and clear cache
+            operationId: clearDailyRankingCache
+            responses:
+                200:
+                    description: Clear successfully
 
 components:
     schemas:

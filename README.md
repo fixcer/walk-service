@@ -8,6 +8,9 @@
 4.  Edit configuration postgresql, redis in **src/main/resources/application.yml** file
 5.  Create an empty database **walk-service** and schema **public**
 
+# Documentation
+You can see API documentation, system design, database design at `docs` folder
+
 # Swagger
 Project using API-First approach, you can see swagger at `src/main/resources/swagger/api.yaml`
 
