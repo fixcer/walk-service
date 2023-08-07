@@ -23,4 +23,10 @@ public class CacheService implements ICacheService {
         log.info("Clear monthly step cache for user {}", userId);
     }
 
+    @Override
+    @CacheEvict(value = Constants.CacheName.DAILY_RANKING, allEntries = true)
+    public void clearDailyRankingCache() {
+        log.info("Clear daily ranking cache for all entries");
+    }
+
 }

@@ -3,7 +3,8 @@ create materialized view if not exists daily_ranking as
            s.user_id,
            s.steps
     from steps s
-    where s.date = to_char(current_date at time zone 'ALMST', 'yyyy-MM-dd')::date;
+    where s.date = to_char(current_date at time zone 'ALMST', 'yyyy-MM-dd')::date
+    order by s.steps desc, s.step_id;
 
 
 create materialized view if not exists weekly_ranking as
@@ -13,7 +14,8 @@ create materialized view if not exists weekly_ranking as
     from steps s
     where s.date >= date_trunc('week', now()) - interval '7 hours' and
           s.date < date_trunc('week', now()) - interval '7 hours' + interval '1 week'
-    group by s.user_id;
+    group by s.user_id
+    order by sum(s.steps) desc, max(s.step_id);
 
 
 create materialized view if not exists monthly_ranking as
@@ -23,4 +25,5 @@ create materialized view if not exists monthly_ranking as
     from steps s
     where s.date >= date_trunc('month', now()) - interval '7 hours' and
           s.date < date_trunc('month', now()) - interval '7 hours' + interval '1 month'
-    group by s.user_id;
+    group by s.user_id
+    order by sum(s.steps) desc, max(s.step_id);

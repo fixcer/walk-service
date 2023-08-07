@@ -36,6 +36,7 @@ public class CacheConfiguration {
         Map<String, CacheConfig> config = new HashMap<>();
         config.put(Constants.CacheName.WEEKLY_STEP, new CacheConfig(timeToLive, maxIdleTime));
         config.put(Constants.CacheName.MONTHLY_STEP, new CacheConfig(timeToLive, maxIdleTime));
+        config.put(Constants.CacheName.DAILY_RANKING, new CacheConfig(timeToLive, maxIdleTime));
         return new RedissonSpringCacheManager(redissonClient, config);
     }
 

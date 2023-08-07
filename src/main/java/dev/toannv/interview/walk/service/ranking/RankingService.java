@@ -7,6 +7,7 @@ import dev.toannv.interview.walk.exception.ErrorCode;
 import dev.toannv.interview.walk.exception.ValidationException;
 import dev.toannv.interview.walk.repository.IDailyRankingRepository;
 import dev.toannv.interview.walk.utils.CommonUtils;
+import dev.toannv.interview.walk.utils.Constants;
 import dev.toannv.interview.walk.web.api.model.GetRankingByDateResponse;
 import dev.toannv.interview.walk.web.api.model.GetRankingCriteria;
 import dev.toannv.interview.walk.web.api.model.Paging;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,10 +31,10 @@ public class RankingService implements IRankingService {
     private final IDailyRankingRepository dailyRankingRepository;
 
     @Override
+    @Cacheable(value = Constants.CacheName.DAILY_RANKING, keyGenerator="customKeyGenerator")
     public GetRankingByDateResponse getDailyRanking(final GetRankingCriteria criteria) {
         final JPAQuery<DailyRanking> query = new JPAQuery<DailyRanking>()
                 .from(QDailyRanking.dailyRanking)
-                .orderBy(QDailyRanking.dailyRanking.steps.desc(), QDailyRanking.dailyRanking.stepId.asc())
                 .limit(criteria.getSize() + 1L);
 
         if (StringUtils.isBlank(criteria.getCursor())) {
@@ -55,10 +57,11 @@ public class RankingService implements IRankingService {
 
     private GetRankingByDateResponse findAllByCriteria(final int size, final JPAQuery<DailyRanking> query) {
         final var entities = dailyRankingRepository.findAll(query);
+        final var currentDay = LocalDate.now().toString();
 
         if (CollectionUtils.isEmpty(entities)) {
             return new GetRankingByDateResponse()
-                    .date(LocalDate.now())
+                    .date(currentDay)
                     .paging(new Paging()
                             .size(size)
                             .cursor(null)
@@ -69,7 +72,7 @@ public class RankingService implements IRankingService {
         if (entities.size() > size) {
             var lastEntityReality = entities.get(entities.size() - 2);
             return new GetRankingByDateResponse()
-                    .date(LocalDate.now())
+                    .date(currentDay)
                     .paging(new Paging()
                             .size(size)
                             .cursor(CommonUtils.toCursor(lastEntityReality.getSteps(), lastEntityReality.getStepId()))
@@ -85,12 +88,13 @@ public class RankingService implements IRankingService {
         }
 
         return new GetRankingByDateResponse()
-                .date(LocalDate.now())
+                .date(currentDay)
                 .paging(new Paging()
                         .size(size)
                         .cursor(null)
                         .hasNext(false))
-                .ranking(entities.stream().map(dailyRanking -> new RankingItem()
+                .ranking(entities.stream()
+                        .map(dailyRanking -> new RankingItem()
                                 .userId(dailyRanking.getUserId())
                                 .steps(dailyRanking.getSteps()))
                         .toList());

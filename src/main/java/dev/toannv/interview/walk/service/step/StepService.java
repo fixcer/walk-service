@@ -132,6 +132,7 @@ public class StepService implements IStepService {
             return;
         }
 
+        cacheService.clearDailyRankingCache();
         lock.lock(dailyRankingLockDuration, TimeUnit.SECONDS);
         log.info("<LOCKED> Refresh daily ranking");
         try {

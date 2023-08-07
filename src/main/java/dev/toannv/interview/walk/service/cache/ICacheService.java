@@ -17,4 +17,9 @@ public interface ICacheService {
      */
     void clearMonthlyStepCache(Long userId);
 
+    /**
+     * Clear daily ranking cache for all entries
+     */
+    void clearDailyRankingCache();
+
 }

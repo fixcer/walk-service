@@ -16,7 +16,7 @@ public class RankingV1Controller implements RankingV1ApiDelegate {
     private final IRankingService rankingService;
 
     @Override
-    public ResponseEntity<GetRankingByDateResponse> getRankingByCurrentDate(GetRankingCriteria criteria) {
+    public ResponseEntity<GetRankingByDateResponse> getRankingByCurrentDate(final GetRankingCriteria criteria) {
         return ResponseEntity.ok(rankingService.getDailyRanking(criteria));
     }
 

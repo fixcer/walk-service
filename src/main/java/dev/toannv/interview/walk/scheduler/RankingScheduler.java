@@ -18,12 +18,20 @@ public class RankingScheduler {
         stepService.refreshDailyRanking();
     }
 
-    @Scheduled(fixedDelayString = "${walk-service.scheduler.ranking.weekly}", initialDelay = 3000)
+    /**
+     * If we have feature to get weekly ranking, we can enable this scheduler
+     * <p>
+     * scheduler @Scheduled(fixedDelayString = "${walk-service.scheduler.ranking.weekly}", initialDelay = 3000)
+     */
     public void refreshWeeklyRanking() {
         stepService.refreshWeeklyRanking();
     }
 
-    @Scheduled(fixedDelayString = "${walk-service.scheduler.ranking.monthly}", initialDelay = 3000)
+    /**
+     * If we have feature to get monthly ranking, we can enable this scheduler
+     * <p>
+     * scheduler @Scheduled(fixedDelayString = "${walk-service.scheduler.ranking.monthly}", initialDelay = 3000)
+     */
     public void refreshMonthlyRanking() {
         stepService.refreshMonthlyRanking();
     }

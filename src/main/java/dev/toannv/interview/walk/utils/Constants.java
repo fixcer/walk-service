@@ -21,6 +21,7 @@ public final class Constants {
     public static final class CacheName {
         public static final String WEEKLY_STEP = "weekly-step";
         public static final String MONTHLY_STEP = "monthly-step";
+        public static final String DAILY_RANKING = "daily-ranking";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
